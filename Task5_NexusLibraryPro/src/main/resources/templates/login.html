@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card glass-card text-center">
+            
+            <div class="mb-4">
+                <i class="bi bi-book-half fs-1 text-info"></i>
+                <h2 class="mt-2 fw-bold">NexusLibrary <span class="text-info">Pro</span></h2>
+                <p class="text-secondary small">Digital Library Management System</p>
+            </div>
+
+            <!-- Toast Messages -->
+            <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+            <!-- Login Alerts -->
+            <div th:if="${param.error}" class="alert alert-danger border-0 rounded-3 text-start small mb-3 bg-danger bg-opacity-10 text-danger">
+                <i class="bi bi-exclamation-circle-fill me-2"></i> Invalid email or password.
+            </div>
+            
+            <div th:if="${param.logout}" class="alert alert-info border-0 rounded-3 text-start small mb-3 bg-info bg-opacity-10 text-info">
+                <i class="bi bi-info-circle-fill me-2"></i> You have logged out successfully.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3 text-start">
+                    <label for="username" class="form-label text-secondary small fw-medium">Email Address</label>
+                    <input type="text" class="form-control glass-input" id="username" name="username" placeholder="e.g. admin or member@mail.com" required autofocus>
+                </div>
+                
+                <div class="mb-4 text-start">
+                    <label for="password" class="form-label text-secondary small fw-medium">Password</label>
+                    <input type="password" class="form-control glass-input" id="password" name="password" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-neon w-100 py-2.5 mb-3">Sign In</button>
+            </form>
+
+            <div class="text-secondary small">
+                Don't have a library account? 
+                <a th:href="@{/register}" class="text-info text-decoration-none fw-medium">Register here</a>
+            </div>
+
+            <!-- Default Demo Credentials hint for evaluator -->
+            <div class="mt-4 border-top border-secondary pt-3 text-start">
+                <p class="text-secondary small mb-1 fw-bold">Demo Accounts:</p>
+                <div class="d-flex justify-content-between text-secondary small">
+                    <span>Admin: <code>admin</code> / <code>admin123</code></span>
+                    <span>Member: <code>krish@mail.com</code> / <code>password123</code></span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

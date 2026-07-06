@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${book.title + ' - Details'}">Book Details - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: memberSidebar('catalog')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <a th:href="@{/member/catalog}" class="btn btn-sm btn-neon-secondary mb-3"><i class="bi bi-chevron-left me-1"></i>Back to Catalog</a>
+            <h1 class="fw-bold m-0" th:text="${book.title}">Book Title</h1>
+            <p class="text-secondary small" th:text="${'by ' + book.authorName}">by Author</p>
+        </div>
+
+        <div class="glass-card p-5">
+            <div class="d-flex flex-column justify-content-between">
+                <div>
+                    <!-- Description and title info -->
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge-neon badge-neon-blue" th:text="${book.categoryName}">Genre</span>
+                        <span th:if="${book.status.name() == 'AVAILABLE'}" class="badge-neon badge-neon-green">IN STOCK</span>
+                        <span th:if="${book.status.name() == 'OUT_OF_STOCK'}" class="badge-neon badge-neon-red">OUT OF STOCK</span>
+                        <span th:if="${book.status.name() == 'ON_HOLD'}" class="badge-neon badge-neon-yellow">ON HOLD</span>
+                    </div>
+
+                    <p class="text-secondary small" style="line-height: 1.8;" th:text="${book.description != null && !book.description.blank ? book.description : 'No description available for this book.'}">Book description here...</p>
+
+                    <!-- Properties table -->
+                    <div class="row g-4 mt-3">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="text-secondary small fw-bold">ISBN</div>
+                            <code th:text="${book.isbn}">978-01-234-5</code>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="text-secondary small fw-bold">Publisher</div>
+                            <span th:text="${book.publisher}">Publisher Name</span>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="text-secondary small fw-bold">Language</div>
+                            <span th:text="${book.language}">English</span>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="text-secondary small fw-bold">Publication Year</div>
+                            <span th:text="${book.publicationYear}">2026</span>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="text-secondary small fw-bold">Shelf Number</div>
+                            <span th:text="${book.shelfNumber != null ? book.shelfNumber : 'N/A'}">A-12</span>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="text-secondary small fw-bold">Available Copies</div>
+                            <span th:text="${book.availableCopies + ' of ' + book.totalCopies}">3 of 5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Action Buttons Panel -->
+                <div class="border-top border-secondary pt-4 mt-5 d-flex gap-3">
+                    <!-- Case 1: Already Checked Out -> Request Return -->
+                    <form th:if="${isBorrowed}" th:action="@{/member/borrow/return/{issueId}(issueId=${activeIssueId})}" method="post" class="w-100">
+                        <button type="submit" class="btn btn-warning py-2.5 w-100 fw-bold">Request Book Return</button>
+                    </form>
+                    
+                    <!-- Case 2: Borrow Request Pending -->
+                    <button th:if="${isRequested}" class="btn btn-neon-secondary py-2.5 w-100 fw-bold" disabled>
+                        <i class="bi bi-clock-history text-info me-2"></i>Borrow Request Pending Approval
+                    </button>
+                    
+                    <!-- Case 3: Return Request Pending -->
+                    <button th:if="${isReturnRequested}" class="btn btn-neon-secondary py-2.5 w-100 fw-bold" disabled>
+                        <i class="bi bi-clock-history text-warning me-2"></i>Return Request Pending Verification
+                    </button>
+
+                    <!-- Case 4: Already Reserved -> Cancel Hold option -->
+                    <form th:if="${isReserved}" th:action="@{/member/reserve/cancel/{reservationId}(reservationId=${activeReservationId})}" method="post" class="w-100">
+                        <button type="submit" class="btn btn-danger py-2.5 w-100 fw-bold">Cancel Reservation Hold</button>
+                    </form>
+
+                    <!-- Case 5: Standard Borrow Option (Stock available) -->
+                    <form th:if="${!isBorrowed && !isRequested && !isReturnRequested && !isReserved && book.availableCopies > 0}" 
+                          th:action="@{/member/borrow/request/{bookId}(bookId=${book.id})}" method="post" class="w-100">
+                        <button type="submit" class="btn btn-neon py-2.5 w-100">Request Book Borrow</button>
+                    </form>
+
+                    <!-- Case 6: Out of stock -> Reservation Request -->
+                    <form th:if="${!isBorrowed && !isRequested && !isReturnRequested && !isReserved && book.availableCopies <= 0}" 
+                          th:action="@{/member/reserve/request/{bookId}(bookId=${book.id})}" method="post" class="w-100">
+                        <button type="submit" class="btn btn-neon py-2.5 w-100"><i class="bi bi-calendar2-plus me-2"></i>Reserve Out-Of-Stock Book</button>
+                    </form>
+                </div>
+            </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

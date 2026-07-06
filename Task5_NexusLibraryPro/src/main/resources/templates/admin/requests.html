@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Borrow Requests - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: adminSidebar('requests')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Borrow & Return Requests</h1>
+            <p class="text-secondary small">Approve book issues, process returns, calculate late fees, and manage checkouts history</p>
+        </div>
+
+        <!-- Filter Widget -->
+        <div class="glass-card p-4 mb-4">
+            <form th:action="@{/admin/requests}" method="get" class="row g-3">
+                <div class="col-md-7">
+                    <label class="form-label text-secondary small fw-medium">Search Requests</label>
+                    <input type="text" name="search" th:value="${search}" class="form-control glass-input" placeholder="Search by member name, book title, or ISBN...">
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small fw-medium">Transaction Status</label>
+                    <select name="status" class="form-select glass-input glass-select">
+                        <option value="">All Transactions</option>
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == selectedStatus}"></option>
+                    </select>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-neon-secondary w-100 py-2.5 px-0 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="glass-card overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th>Member Details</th>
+                            <th>Book Details</th>
+                            <th>Checkout Date</th>
+                            <th>Due Date</th>
+                            <th>Return Date</th>
+                            <th>Late Days</th>
+                            <th>Fine</th>
+                            <th>Status</th>
+                            <th style="width: 180px;" class="text-center">Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req : ${requests}">
+                            <td><span class="text-secondary" th:text="${req.id}">1</span></td>
+                            <td>
+                                <div class="fw-bold" th:text="${req.memberName}">Member Name</div>
+                                <div class="text-secondary small" th:text="${req.memberEmail}">email@mail.com</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold" th:text="${req.bookTitle}">Book Title</div>
+                                <div class="text-secondary small" th:text="${'ISBN: ' + req.bookIsbn}">ISBN: 12345</div>
+                            </td>
+                            <td th:text="${req.issueDate != null ? req.issueDate : 'Pending approval'}">Date</td>
+                            <td th:text="${req.dueDate != null ? req.dueDate : 'Pending approval'}">Date</td>
+                            <td th:text="${req.returnDate != null ? req.returnDate : 'Not returned'}">Date</td>
+                            <td class="text-center" th:text="${req.lateDays}">0</td>
+                            <td class="fw-bold" th:text="${req.fine > 0 ? '₹' + #numbers.formatDecimal(req.fine, 1, 2) : '—'}">—</td>
+                            <td>
+                                <span th:if="${req.status.name() == 'REQUESTED'}" class="badge-neon badge-neon-purple">BORROW REQUESTED</span>
+                                <span th:if="${req.status.name() == 'ISSUED'}" class="badge-neon badge-neon-blue">ISSUED</span>
+                                <span th:if="${req.status.name() == 'RETURN_REQUESTED'}" class="badge-neon badge-neon-yellow">RETURN REQUESTED</span>
+                                <span th:if="${req.status.name() == 'RETURNED'}" class="badge-neon badge-neon-green">RETURNED</span>
+                                <span th:if="${req.status.name() == 'OVERDUE'}" class="badge-neon badge-neon-red">OVERDUE</span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <!-- REQUESTED: Approve / Reject Borrow Buttons -->
+                                    <div th:if="${req.status.name() == 'REQUESTED'}" class="d-flex gap-2">
+                                        <a th:href="@{/admin/requests/borrow/approve/{id}(id=${req.id})}" class="btn btn-sm btn-success rounded-3 px-3">Approve</a>
+                                        <a th:href="@{/admin/requests/borrow/reject/{id}(id=${req.id})}" class="btn btn-sm btn-outline-danger rounded-3 px-3">Reject</a>
+                                    </div>
+                                    
+                                    <!-- ISSUED / OVERDUE: Return directly button (fallback/utility) -->
+                                    <div th:if="${req.status.name() == 'ISSUED' || req.status.name() == 'OVERDUE'}" class="d-flex gap-2">
+                                        <!-- Let admin directly return if needed -->
+                                        <a th:href="@{/admin/requests/return/approve/{id}(id=${req.id})}" class="btn btn-sm btn-outline-warning rounded-3">Return Book</a>
+                                    </div>
+
+                                    <!-- RETURN_REQUESTED: Approve Return Button -->
+                                    <div th:if="${req.status.name() == 'RETURN_REQUESTED'}" class="d-flex gap-2">
+                                        <a th:href="@{/admin/requests/return/approve/{id}(id=${req.id})}" class="btn btn-sm btn-warning rounded-3 px-3">Accept Return</a>
+                                    </div>
+                                    
+                                    <!-- RETURNED: Complete indicator -->
+                                    <div th:if="${req.status.name() == 'RETURNED'}">
+                                        <span class="text-success small"><i class="bi bi-check2-all me-1"></i>Finalized</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${requests.isEmpty()}">
+                            <td colspan="10" class="text-center text-secondary py-5">
+                                <i class="bi bi-arrow-left-right fs-1 mb-2 d-block"></i>
+                                No borrow or return transactions found.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <nav th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center">
+            <span class="text-secondary small" th:text="${'Showing page ' + (currentPage + 1) + ' of ' + totalPages + ' (' + totalItems + ' transactions)'}">Showing page 1 of 5</span>
+            <ul class="pagination pagination-sm m-0">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link glass-input border-0 rounded-start-3 text-info" th:href="@{/admin/requests(search=${search}, status=${selectedStatus}, page=${currentPage - 1})}">Previous</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link glass-input border-0 rounded-0 text-info" th:classappend="${currentPage == i} ? 'bg-info text-white'" th:href="@{/admin/requests(search=${search}, status=${selectedStatus}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link glass-input border-0 rounded-end-3 text-info" th:href="@{/admin/requests(search=${search}, status=${selectedStatus}, page=${currentPage + 1})}">Next</a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

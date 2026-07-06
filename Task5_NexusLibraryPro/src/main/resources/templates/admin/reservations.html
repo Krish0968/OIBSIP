@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reservations - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: adminSidebar('reservations')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Book Reservations</h1>
+            <p class="text-secondary small">Review customer reservation requests, approve stock holds, and fulfill borrowings on reader pickup</p>
+        </div>
+
+        <!-- Filter Widget -->
+        <div class="glass-card p-4 mb-4">
+            <form th:action="@{/admin/reservations}" method="get" class="row g-3">
+                <div class="col-md-7">
+                    <label class="form-label text-secondary small fw-medium">Search Reservations</label>
+                    <input type="text" name="search" th:value="${search}" class="form-control glass-input" placeholder="Search by member name, book title, or ISBN...">
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small fw-medium">Reservation Status</label>
+                    <select name="status" class="form-select glass-input glass-select">
+                        <option value="">All Statuses</option>
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == selectedStatus}"></option>
+                    </select>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-neon-secondary w-100 py-2.5 px-0 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Reservations Table -->
+        <div class="glass-card overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th>Member Details</th>
+                            <th>Book Details</th>
+                            <th>Reservation Date</th>
+                            <th>Status</th>
+                            <th style="width: 220px;" class="text-center">Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="res : ${reservations}">
+                            <td><span class="text-secondary" th:text="${res.id}">1</span></td>
+                            <td>
+                                <div class="fw-bold" th:text="${res.memberName}">Member Name</div>
+                                <div class="text-secondary small" th:text="${res.memberEmail}">email@mail.com</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold" th:text="${res.bookTitle}">Book Title</div>
+                                <div class="text-secondary small" th:text="${'ISBN: ' + res.bookIsbn}">ISBN: 12345</div>
+                            </td>
+                            <td th:text="${#temporals.format(res.reservationDate, 'dd-MMM-yyyy HH:mm')}">Date</td>
+                            <td>
+                                <span th:if="${res.status.name() == 'PENDING'}" class="badge-neon badge-neon-purple">PENDING APPROVAL</span>
+                                <span th:if="${res.status.name() == 'APPROVED'}" class="badge-neon badge-neon-green">HOLD APPROVED</span>
+                                <span th:if="${res.status.name() == 'CANCELLED'}" class="badge-neon badge-neon-red">CANCELLED</span>
+                                <span th:if="${res.status.name() == 'COMPLETED'}" class="badge-neon badge-neon-blue">FULFILLED</span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <!-- PENDING: Approve Hold / Cancel -->
+                                    <div th:if="${res.status.name() == 'PENDING'}" class="d-flex gap-2">
+                                        <a th:href="@{/admin/reservations/approve/{id}(id=${res.id})}" class="btn btn-sm btn-success rounded-3 px-3">Hold Copy</a>
+                                        <a th:href="@{/admin/reservations/cancel/{id}(id=${res.id})}" class="btn btn-sm btn-outline-danger rounded-3 px-3">Cancel</a>
+                                    </div>
+                                    
+                                    <!-- APPROVED: Fulfill Borrow / Cancel -->
+                                    <div th:if="${res.status.name() == 'APPROVED'}" class="d-flex gap-2">
+                                        <a th:href="@{/admin/reservations/fulfill/{id}(id=${res.id})}" class="btn btn-sm btn-info rounded-3 px-3 text-white">Fulfill Issue</a>
+                                        <a th:href="@{/admin/reservations/cancel/{id}(id=${res.id})}" class="btn btn-sm btn-outline-danger rounded-3 px-3">Cancel</a>
+                                    </div>
+                                    
+                                    <!-- CANCELLED / COMPLETED: status metrics only -->
+                                    <div th:if="${res.status.name() == 'CANCELLED' || res.status.name() == 'COMPLETED'}">
+                                        <span class="text-secondary small">—</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${reservations.isEmpty()}">
+                            <td colspan="6" class="text-center text-secondary py-5">
+                                <i class="bi bi-calendar2-check-fill fs-1 mb-2 d-block"></i>
+                                No book reservations found.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <nav th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center">
+            <span class="text-secondary small" th:text="${'Showing page ' + (currentPage + 1) + ' of ' + totalPages + ' (' + totalItems + ' reservations)'}">Showing page 1 of 5</span>
+            <ul class="pagination pagination-sm m-0">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link glass-input border-0 rounded-start-3 text-info" th:href="@{/admin/reservations(search=${search}, status=${selectedStatus}, page=${currentPage - 1})}">Previous</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link glass-input border-0 rounded-0 text-info" th:classappend="${currentPage == i} ? 'bg-info text-white'" th:href="@{/admin/reservations(search=${search}, status=${selectedStatus}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link glass-input border-0 rounded-end-3 text-info" th:href="@{/admin/reservations(search=${search}, status=${selectedStatus}, page=${currentPage + 1})}">Next</a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

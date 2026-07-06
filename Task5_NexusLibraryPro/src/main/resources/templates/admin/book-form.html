@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${book.id == null ? 'Catalog Book - NexusLibrary Pro' : 'Edit Book - NexusLibrary Pro'}">Catalog Book - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: adminSidebar('books')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0" th:text="${book.id == null ? 'Catalog Book' : 'Edit Book Details'}">Catalog Book</h1>
+            <p class="text-secondary small" th:text="${book.id == null ? 'Register a new book inside the digital catalog index' : 'Modify shelf number, copies count, or title of an existing book'}">Register a new book inside the digital catalog index</p>
+        </div>
+
+        <div class="glass-card p-5" style="max-width: 800px; margin: 0 auto;">
+            
+            <!-- Book Form -->
+            <form th:action="${book.id == null ? '/admin/books/new' : '/admin/books/edit/' + book.id}" th:object="${book}" method="post">
+                <input type="hidden" th:field="*{id}">
+                
+                <div class="row g-3 mb-4">
+                    <!-- Title -->
+                    <div class="col-md-8">
+                        <label for="title" class="form-label text-secondary small fw-medium">Book Title</label>
+                        <input type="text" th:field="*{title}" class="form-control glass-input" id="title" placeholder="e.g. Clean Code" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Title Error</div>
+                    </div>
+
+                    <!-- ISBN -->
+                    <div class="col-md-4">
+                        <label for="isbn" class="form-label text-secondary small fw-medium">ISBN Number</label>
+                        <input type="text" th:field="*{isbn}" class="form-control glass-input" id="isbn" placeholder="e.g. 978-0132350884" required>
+                        <div class="text-danger small mt-1" th:if="${isbnError}" th:text="${isbnError}">ISBN database duplication error</div>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}">ISBN Error</div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <!-- Author Select -->
+                    <div class="col-md-6">
+                        <label for="author" class="form-label text-secondary small fw-medium">Author</label>
+                        <select th:field="*{authorId}" class="form-select glass-input glass-select" id="author" required>
+                            <option value="">Select Author...</option>
+                            <option th:each="auth : ${authors}" th:value="${auth.id}" th:text="${auth.name}"></option>
+                        </select>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('authorId')}" th:errors="*{authorId}">Author Error</div>
+                        <div class="small mt-1 text-secondary">
+                            Author missing? <a th:href="@{/admin/authors}" class="text-info text-decoration-none small">Add author here</a>
+                        </div>
+                    </div>
+
+                    <!-- Category Select -->
+                    <div class="col-md-6">
+                        <label for="category" class="form-label text-secondary small fw-medium">Category</label>
+                        <select th:field="*{categoryId}" class="form-select glass-input glass-select" id="category" required>
+                            <option value="">Select Category...</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                        </select>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}">Category Error</div>
+                        <div class="small mt-1 text-secondary">
+                            Category missing? <a th:href="@{/admin/categories}" class="text-info text-decoration-none small">Add category here</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <!-- Publisher -->
+                    <div class="col-md-4">
+                        <label for="publisher" class="form-label text-secondary small fw-medium">Publisher</label>
+                        <input type="text" th:field="*{publisher}" class="form-control glass-input" id="publisher" placeholder="e.g. Prentice Hall" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('publisher')}" th:errors="*{publisher}">Publisher Error</div>
+                    </div>
+
+                    <!-- Language -->
+                    <div class="col-md-4">
+                        <label for="language" class="form-label text-secondary small fw-medium">Language</label>
+                        <input type="text" th:field="*{language}" class="form-control glass-input" id="language" placeholder="e.g. English" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('language')}" th:errors="*{language}">Language Error</div>
+                    </div>
+
+                    <!-- Publication Year -->
+                    <div class="col-md-4">
+                        <label for="pubYear" class="form-label text-secondary small fw-medium">Publication Year</label>
+                        <input type="number" th:field="*{publicationYear}" class="form-control glass-input" id="pubYear" placeholder="e.g. 2008" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('publicationYear')}" th:errors="*{publicationYear}">Year Error</div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <!-- Total Copies -->
+                    <div class="col-md-6">
+                        <label for="totalCopies" class="form-label text-secondary small fw-medium">Total Copies</label>
+                        <input type="number" th:field="*{totalCopies}" class="form-control glass-input" id="totalCopies" min="0" placeholder="e.g. 5" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('totalCopies')}" th:errors="*{totalCopies}">Total Copies Error</div>
+                    </div>
+
+                    <!-- Shelf Number -->
+                    <div class="col-md-6">
+                        <label for="shelf" class="form-label text-secondary small fw-medium">Shelf Number</label>
+                        <input type="text" th:field="*{shelfNumber}" class="form-control glass-input" id="shelf" placeholder="e.g. C-15">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="desc" class="form-label text-secondary small fw-medium">Book Description</label>
+                    <textarea th:field="*{description}" class="form-control glass-input" id="desc" rows="4" placeholder="Brief outline, chapters, summary or themes..."></textarea>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description Error</div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="d-flex justify-content-end gap-3 border-top border-secondary pt-4 mt-4">
+                    <a th:href="@{/admin/books}" class="btn btn-neon-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-neon">Save Book</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

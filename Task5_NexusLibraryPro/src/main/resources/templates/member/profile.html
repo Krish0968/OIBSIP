@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Profile Settings - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: memberSidebar('profile')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Profile Settings</h1>
+            <p class="text-secondary small">Update your contact information, delivery address, and login credentials</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left panel: Info Edit -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-person-gear me-2 text-info"></i>Personal Information</h5>
+                    
+                    <form th:action="@{/member/profile/update}" th:object="${member}" method="post">
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Email Address (Registered Username)</label>
+                            <input type="email" th:field="*{email}" class="form-control glass-input" readonly style="opacity: 0.7; cursor: not-allowed;">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label text-secondary small fw-medium">Full Name</label>
+                            <input type="text" th:field="*{name}" class="form-control glass-input" id="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label text-secondary small fw-medium">Phone Number</label>
+                            <input type="text" th:field="*{phone}" class="form-control glass-input" id="phone" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="address" class="form-label text-secondary small fw-medium">Physical Address</label>
+                            <textarea th:field="*{address}" class="form-control glass-input" id="address" rows="3" placeholder="Address..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-neon w-100">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right panel: Password Edit -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-shield-lock me-2 text-primary"></i>Change Password</h5>
+                    
+                    <form th:action="@{/member/profile/change-password}" method="post">
+                        
+                        <div class="mb-3">
+                            <label for="currPass" class="form-label text-secondary small fw-medium">Current Password</label>
+                            <input type="password" name="currentPassword" class="form-control glass-input" id="currPass" placeholder="••••••••" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="newPass" class="form-label text-secondary small fw-medium">New Password (Min. 6 characters)</label>
+                            <input type="password" name="newPassword" class="form-control glass-input" id="newPass" placeholder="••••••••" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-neon w-100">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

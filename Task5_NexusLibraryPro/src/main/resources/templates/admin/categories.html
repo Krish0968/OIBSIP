@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Categories - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: adminSidebar('categories')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Manage Categories</h1>
+            <p class="text-secondary small">Add, update, and manage book shelf classifications and genres</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Panel: Add / Edit Category Card -->
+            <div class="col-lg-4">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-4" id="formTitle"><i class="bi bi-tag me-2 text-info"></i>Add New Category</h5>
+                    
+                    <form id="categoryForm" th:action="@{/admin/categories/new}" th:object="${category}" method="post">
+                        
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label text-secondary small fw-medium">Category Name</label>
+                            <input type="text" th:field="*{name}" class="form-control glass-input" id="categoryName" placeholder="e.g. Science Fiction" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="categoryDesc" class="form-label text-secondary small fw-medium">Description</label>
+                            <textarea th:field="*{description}" class="form-control glass-input" id="categoryDesc" rows="4" placeholder="Brief genre outline..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="button" id="cancelEditBtn" class="btn btn-neon-secondary w-50 d-none" onclick="resetForm()">Cancel</button>
+                            <button type="submit" id="submitBtn" class="btn btn-neon w-100">Add Category</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Panel: Categories Table -->
+            <div class="col-lg-8">
+                <div class="glass-card overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table custom-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">ID</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th style="width: 120px;" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="cat : ${categories}">
+                                    <td><span class="text-secondary" th:text="${cat.id}">1</span></td>
+                                    <td><strong th:text="${cat.name}">Category Name</strong></td>
+                                    <td>
+                                        <span class="text-secondary small" 
+                                              th:text="${cat.description != null && !cat.description.blank ? 
+                                                        (cat.description.length() > 80 ? cat.description.substring(0, 80) + '...' : cat.description) : 'No description provided.'}">
+                                            Description...
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button class="btn btn-sm btn-outline-info border-0 rounded-3" 
+                                                    th:data-id="${cat.id}" 
+                                                    th:data-name="${cat.name}" 
+                                                    th:data-desc="${cat.description}" 
+                                                    onclick="loadCategoryEdit(this)">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <a th:href="@{/admin/categories/delete/{id}(id=${cat.id})}" 
+                                               onclick="return confirm('Are you sure you want to delete this category?');" 
+                                               class="btn btn-sm btn-outline-danger border-0 rounded-3">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${categories.isEmpty()}">
+                                    <td colspan="4" class="text-center text-secondary py-5">
+                                        <i class="bi bi-tags-fill fs-1 mb-2 d-block"></i>
+                                        No categories currently registered.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <!-- Edit Helper Script -->
+    <script>
+        function loadCategoryEdit(button) {
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const desc = button.getAttribute('data-desc');
+
+            // Set Form inputs
+            document.getElementById('categoryName').value = name;
+            document.getElementById('categoryDesc').value = desc;
+
+            // Change Form Action & title
+            const form = document.getElementById('categoryForm');
+            form.action = '/admin/categories/edit/' + id;
+            
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil-square me-2 text-info"></i>Edit Category';
+            document.getElementById('submitBtn').innerText = 'Update';
+            document.getElementById('submitBtn').className = 'btn btn-neon w-50';
+            
+            document.getElementById('cancelEditBtn').classList.remove('d-none');
+        }
+
+        function resetForm() {
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryDesc').value = '';
+
+            const form = document.getElementById('categoryForm');
+            form.action = '/admin/categories/new';
+
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-tag me-2 text-info"></i>Add New Category';
+            document.getElementById('submitBtn').innerText = 'Add Category';
+            document.getElementById('submitBtn').className = 'btn btn-neon w-100';
+            
+            document.getElementById('cancelEditBtn').classList.add('d-none');
+        }
+    </script>
+</body>
+</html>

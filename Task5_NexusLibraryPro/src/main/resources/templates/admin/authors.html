@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Authors - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: adminSidebar('authors')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Manage Authors</h1>
+            <p class="text-secondary small">Add, update, and manage index cards for book authors</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Panel: Add / Edit Author Card -->
+            <div class="col-lg-4">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-4" id="formTitle"><i class="bi bi-person-plus me-2 text-info"></i>Add New Author</h5>
+                    
+                    <form id="authorForm" th:action="@{/admin/authors/new}" th:object="${author}" method="post">
+                        
+                        <div class="mb-3">
+                            <label for="authorName" class="form-label text-secondary small fw-medium">Author Name</label>
+                            <input type="text" th:field="*{name}" class="form-control glass-input" id="authorName" placeholder="e.g. Robert C. Martin" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="authorBio" class="form-label text-secondary small fw-medium">Biography</label>
+                            <textarea th:field="*{biography}" class="form-control glass-input" id="authorBio" rows="4" placeholder="Biography details..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="button" id="cancelEditBtn" class="btn btn-neon-secondary w-50 d-none" onclick="resetForm()">Cancel</button>
+                            <button type="submit" id="submitBtn" class="btn btn-neon w-100">Add Author</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Panel: Authors Table -->
+            <div class="col-lg-8">
+                <div class="glass-card overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table custom-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">ID</th>
+                                    <th>Name</th>
+                                    <th>Biography Summary</th>
+                                    <th style="width: 120px;" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="auth : ${authors}">
+                                    <td><span class="text-secondary" th:text="${auth.id}">1</span></td>
+                                    <td><strong th:text="${auth.name}">Author Name</strong></td>
+                                    <td>
+                                        <span class="text-secondary small" 
+                                              th:text="${auth.biography != null && !auth.biography.blank ? 
+                                                        (auth.biography.length() > 80 ? auth.biography.substring(0, 80) + '...' : auth.biography) : 'No biography available.'}">
+                                            Biography...
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <!-- Setup JavaScript helper trigger to populate left form for editing -->
+                                            <button class="btn btn-sm btn-outline-info border-0 rounded-3" 
+                                                    th:data-id="${auth.id}" 
+                                                    th:data-name="${auth.name}" 
+                                                    th:data-bio="${auth.biography}" 
+                                                    onclick="loadAuthorEdit(this)">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <a th:href="@{/admin/authors/delete/{id}(id=${auth.id})}" 
+                                               onclick="return confirm('Are you sure you want to delete this author?');" 
+                                               class="btn btn-sm btn-outline-danger border-0 rounded-3">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${authors.isEmpty()}">
+                                    <td colspan="4" class="text-center text-secondary py-5">
+                                        <i class="bi bi-person-x fs-1 mb-2 d-block"></i>
+                                        No authors currently cataloged.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <!-- Edit Helper Script -->
+    <script>
+        function loadAuthorEdit(button) {
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const bio = button.getAttribute('data-bio');
+
+            // Set Form inputs
+            document.getElementById('authorName').value = name;
+            document.getElementById('authorBio').value = bio;
+
+            // Change Form Action & title
+            const form = document.getElementById('authorForm');
+            form.action = '/admin/authors/edit/' + id;
+            
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil-square me-2 text-info"></i>Edit Author';
+            document.getElementById('submitBtn').innerText = 'Update';
+            document.getElementById('submitBtn').className = 'btn btn-neon w-50';
+            
+            document.getElementById('cancelEditBtn').classList.remove('d-none');
+        }
+
+        function resetForm() {
+            document.getElementById('authorName').value = '';
+            document.getElementById('authorBio').value = '';
+
+            const form = document.getElementById('authorForm');
+            form.action = '/admin/authors/new';
+
+            document.getElementById('formTitle').innerHTML = '<i class="bi bi-person-plus me-2 text-info"></i>Add New Author';
+            document.getElementById('submitBtn').innerText = 'Add Author';
+            document.getElementById('submitBtn').className = 'btn btn-neon w-100';
+            
+            document.getElementById('cancelEditBtn').classList.add('d-none');
+        }
+    </script>
+</body>
+</html>

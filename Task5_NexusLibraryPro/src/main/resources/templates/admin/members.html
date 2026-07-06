@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Members - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: adminSidebar('members')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Manage Members</h1>
+            <p class="text-secondary small">Review registered reader accounts, membership profiles, and operational statuses</p>
+        </div>
+
+        <!-- Filter Widget -->
+        <div class="glass-card p-4 mb-4">
+            <form th:action="@{/admin/members}" method="get" class="row g-3">
+                <div class="col-md-7">
+                    <label class="form-label text-secondary small fw-medium">Search Members</label>
+                    <input type="text" name="search" th:value="${search}" class="form-control glass-input" placeholder="Search by name, email address, or phone number...">
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small fw-medium">Member Status</label>
+                    <select name="status" class="form-select glass-input glass-select">
+                        <option value="">All Statuses</option>
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == selectedStatus}"></option>
+                    </select>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-neon-secondary w-100 py-2.5 px-0 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Members Table -->
+        <div class="glass-card overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th>Name</th>
+                            <th>Email Address</th>
+                            <th>Phone Number</th>
+                            <th>Membership Date</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th style="width: 140px;" class="text-center">Operations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="m : ${members}">
+                            <td><span class="text-secondary" th:text="${m.id}">1</span></td>
+                            <td><strong th:text="${m.name}">Krish Sharma</strong></td>
+                            <td><code th:text="${m.email}">krish@mail.com</code></td>
+                            <td th:text="${m.phone}">+91 9876543210</td>
+                            <td th:text="${#temporals.format(m.membershipDate, 'dd-MMM-yyyy')}">06-Jul-2026</td>
+                            <td><span class="text-secondary small" th:text="${m.address != null && !m.address.blank ? m.address : 'N/A'}">Delhi</span></td>
+                            <td>
+                                <span th:if="${m.status.name() == 'ACTIVE'}" class="badge-neon badge-neon-green">ACTIVE</span>
+                                <span th:if="${m.status.name() == 'SUSPENDED'}" class="badge-neon badge-neon-red">SUSPENDED</span>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <form th:action="@{/admin/members/toggle-status/{id}(id=${m.id})}" method="post">
+                                        <button type="submit" 
+                                                th:class="${m.status.name() == 'ACTIVE'} ? 'btn btn-sm btn-outline-danger border-0 rounded-3 px-3' : 'btn btn-sm btn-outline-success border-0 rounded-3 px-3'"
+                                                th:text="${m.status.name() == 'ACTIVE'} ? 'Suspend' : 'Activate'">
+                                            Suspend
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${members.isEmpty()}">
+                            <td colspan="8" class="text-center text-secondary py-5">
+                                <i class="bi bi-people-fill fs-1 mb-2 d-block"></i>
+                                No readers found matching criteria.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <nav th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center">
+            <span class="text-secondary small" th:text="${'Showing page ' + (currentPage + 1) + ' of ' + totalPages + ' (' + totalItems + ' members)'}">Showing page 1 of 5</span>
+            <ul class="pagination pagination-sm m-0">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link glass-input border-0 rounded-start-3 text-info" th:href="@{/admin/members(search=${search}, status=${selectedStatus}, page=${currentPage - 1})}">Previous</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link glass-input border-0 rounded-0 text-info" th:classappend="${currentPage == i} ? 'bg-info text-white'" th:href="@{/admin/members(search=${search}, status=${selectedStatus}, page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link glass-input border-0 rounded-end-3 text-info" th:href="@{/admin/members(search=${search}, status=${selectedStatus}, page=${currentPage + 1})}">Next</a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

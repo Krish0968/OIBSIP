@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Activity History - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: memberSidebar('history')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Activity History</h1>
+            <p class="text-secondary small">Review past borrowings, active checkouts, overdue fines, and reservation logs</p>
+        </div>
+
+        <!-- Glass Tab Component -->
+        <div class="glass-card p-4">
+            <ul class="nav nav-tabs nav-tabs-glass mb-4" id="historyTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="borrows-tab" data-bs-toggle="tab" data-bs-target="#borrows" type="button" role="tab">
+                        <i class="bi bi-journal-bookmark me-2"></i>Borrowing History
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reservations-tab" data-bs-toggle="tab" data-bs-target="#reservations" type="button" role="tab">
+                        <i class="bi bi-calendar2-check me-2"></i>Reservations History
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="historyTabContent">
+                
+                <!-- Borrows Tab Panel -->
+                <div class="tab-pane fade show active" id="borrows" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Book Details</th>
+                                    <th>Checkout Date</th>
+                                    <th>Due Date</th>
+                                    <th>Return Date</th>
+                                    <th>Late Days</th>
+                                    <th>Fine</th>
+                                    <th>Status</th>
+                                    <th style="width: 140px;" class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="b : ${borrows}">
+                                    <td>
+                                        <div class="fw-bold"><a th:href="@{/member/books/{id}(id=${b.bookId})}" class="text-white text-decoration-none" th:text="${b.bookTitle}">Book Title</a></div>
+                                        <div class="text-secondary small" th:text="${'ISBN: ' + b.bookIsbn}">ISBN: 12345</div>
+                                    </td>
+                                    <td th:text="${b.issueDate != null ? b.issueDate : 'Pending approval'}">Date</td>
+                                    <td th:text="${b.dueDate != null ? b.dueDate : 'Pending approval'}">Date</td>
+                                    <td th:text="${b.returnDate != null ? b.returnDate : '—'}">—</td>
+                                    <td class="text-center" th:text="${b.lateDays}">0</td>
+                                    <td class="fw-bold text-info" th:text="${b.fine > 0 ? '₹' + #numbers.formatDecimal(b.fine, 1, 2) : '—'}">—</td>
+                                    <td>
+                                        <span th:if="${b.status.name() == 'REQUESTED'}" class="badge-neon badge-neon-purple">PENDING APPROVAL</span>
+                                        <span th:if="${b.status.name() == 'ISSUED'}" class="badge-neon badge-neon-blue">ISSUED</span>
+                                        <span th:if="${b.status.name() == 'RETURN_REQUESTED'}" class="badge-neon badge-neon-yellow">RETURN REQUESTED</span>
+                                        <span th:if="${b.status.name() == 'RETURNED'}" class="badge-neon badge-neon-green">RETURNED</span>
+                                        <span th:if="${b.status.name() == 'OVERDUE'}" class="badge-neon badge-neon-red">OVERDUE</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center">
+                                            <!-- Return Request Button -->
+                                            <form th:if="${b.status.name() == 'ISSUED' || b.status.name() == 'OVERDUE'}" 
+                                                  th:action="@{/member/borrow/return/{issueId}(issueId=${b.id})}" method="post">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning rounded-3 px-3">Return</button>
+                                            </form>
+                                            <span th:unless="${b.status.name() == 'ISSUED' || b.status.name() == 'OVERDUE'}" class="text-secondary small">—</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${borrows.isEmpty()}">
+                                    <td colspan="8" class="text-center text-secondary py-5">
+                                        <i class="bi bi-clock-history fs-1 mb-2 d-block"></i>
+                                        No books checked out or requested.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reservations Tab Panel -->
+                <div class="tab-pane fade" id="reservations" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Book Details</th>
+                                    <th>Reservation Date</th>
+                                    <th>Status</th>
+                                    <th style="width: 140px;" class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${reservations}">
+                                    <td>
+                                        <div class="fw-bold"><a th:href="@{/member/books/{id}(id=${r.bookId})}" class="text-white text-decoration-none" th:text="${r.bookTitle}">Book Title</a></div>
+                                        <div class="text-secondary small" th:text="${'ISBN: ' + r.bookIsbn}">ISBN: 12345</div>
+                                    </td>
+                                    <td th:text="${#temporals.format(r.reservationDate, 'dd-MMM-yyyy HH:mm')}">Date</td>
+                                    <td>
+                                        <span th:if="${r.status.name() == 'PENDING'}" class="badge-neon badge-neon-purple">PENDING STOCK</span>
+                                        <span th:if="${r.status.name() == 'APPROVED'}" class="badge-neon badge-neon-green">HOLD APPROVED</span>
+                                        <span th:if="${r.status.name() == 'CANCELLED'}" class="badge-neon badge-neon-red">CANCELLED</span>
+                                        <span th:if="${r.status.name() == 'COMPLETED'}" class="badge-neon badge-neon-blue">FULFILLED</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center">
+                                            <!-- Cancel Hold button -->
+                                            <form th:if="${r.status.name() == 'PENDING' || r.status.name() == 'APPROVED'}" 
+                                                  th:action="@{/member/reserve/cancel/{id}(id=${r.id})}" method="post">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-3">Cancel</button>
+                                            </form>
+                                            <span th:unless="${r.status.name() == 'PENDING' || r.status.name() == 'APPROVED'}" class="text-secondary small">—</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${reservations.isEmpty()}">
+                                    <td colspan="4" class="text-center text-secondary py-5">
+                                        <i class="bi bi-calendar2-check-fill fs-1 mb-2 d-block"></i>
+                                        No reservation requests found.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

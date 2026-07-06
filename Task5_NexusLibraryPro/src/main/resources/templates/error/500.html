@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Internal Server Error - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card glass-card text-center">
+            
+            <div class="mb-4">
+                <i class="bi bi-cpu-fill fs-1 text-danger"></i>
+                <h2 class="mt-2 fw-bold text-danger">500 - System Error</h2>
+                <p class="text-secondary small mt-3" th:text="${errorMessage != null ? errorMessage : 'A critical database or backend error has occurred. Our systems team has been notified.'}"></p>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a th:href="@{/login}" class="btn btn-neon w-100 py-2.5">Return Home</a>
+            </div>
+
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

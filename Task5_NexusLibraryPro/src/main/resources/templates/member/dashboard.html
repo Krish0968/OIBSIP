@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Member Dashboard - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: memberSidebar('dashboard')}"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content-wrapper">
+        
+        <!-- Header -->
+        <div class="mb-4">
+            <h1 class="fw-bold m-0" th:text="${'Welcome back, ' + member.name}">Welcome back, Krish</h1>
+            <p class="text-secondary small">Your digital library card overview and reading progress</p>
+        </div>
+
+        <!-- Alerts: Suspended account indicator -->
+        <div class="alert alert-danger border-0 rounded-3 p-3 mb-4 bg-danger bg-opacity-10 text-danger" th:if="${member.status.name() == 'SUSPENDED'}">
+            <i class="bi bi-shield-slash-fill me-2 fs-5"></i>
+            <strong>Your account has been suspended!</strong> Please clear pending overdue library fines or contact the library front desk.
+        </div>
+
+        <!-- Member Stats Grid -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="glass-card stats-card p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">BOOKS BORROWED</div>
+                        <i class="bi bi-journal-bookmark text-info fs-4"></i>
+                    </div>
+                    <div class="stats-number" th:text="${borrowedBooks}">0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card stats-card card-purple p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">ACTIVE RESERVATIONS</div>
+                        <i class="bi bi-calendar2-check text-primary fs-4"></i>
+                    </div>
+                    <div class="stats-number" th:text="${activeReservations}">0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card stats-card p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">PENDING FINES</div>
+                        <i class="bi bi-exclamation-octagon text-danger fs-4"></i>
+                    </div>
+                    <div class="stats-number text-danger" th:text="${'₹' + #numbers.formatDecimal(pendingFine, 1, 2)}">₹0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="row g-4">
+            <!-- Left panel: Recent Borrows -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-arrow-left-right text-info me-2"></i>Recent Borrowings</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Book Title</th>
+                                    <th>Checkout Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="b : ${recentBorrows}">
+                                    <td>
+                                        <div class="fw-bold"><a th:href="@{/member/books/{id}(id=${b.bookId})}" class="text-white text-decoration-none" th:text="${b.bookTitle}">Book Title</a></div>
+                                        <div class="text-secondary small" th:text="${'ISBN: ' + b.bookIsbn}">ISBN: 12345</div>
+                                    </td>
+                                    <td th:text="${b.issueDate != null ? b.issueDate : 'Pending approval'}">Date</td>
+                                    <td>
+                                        <span th:if="${b.status.name() == 'REQUESTED'}" class="badge-neon badge-neon-purple">PENDING</span>
+                                        <span th:if="${b.status.name() == 'ISSUED'}" class="badge-neon badge-neon-blue">ISSUED</span>
+                                        <span th:if="${b.status.name() == 'RETURN_REQUESTED'}" class="badge-neon badge-neon-yellow">RETURN SENT</span>
+                                        <span th:if="${b.status.name() == 'RETURNED'}" class="badge-neon badge-neon-green">RETURNED</span>
+                                        <span th:if="${b.status.name() == 'OVERDUE'}" class="badge-neon badge-neon-red">OVERDUE</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${recentBorrows.isEmpty()}">
+                                    <td colspan="3" class="text-center text-secondary py-4">No recent borrowing activity.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right panel: Recent Reservations -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 h-100">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-calendar2-check text-primary me-2"></i>Recent Reservations</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Book Title</th>
+                                    <th>Reserve Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${recentReservations}">
+                                    <td>
+                                        <div class="fw-bold"><a th:href="@{/member/books/{id}(id=${r.bookId})}" class="text-white text-decoration-none" th:text="${r.bookTitle}">Book Title</a></div>
+                                        <div class="text-secondary small" th:text="${'ISBN: ' + r.bookIsbn}">ISBN: 12345</div>
+                                    </td>
+                                    <td th:text="${#temporals.format(r.reservationDate, 'dd-MMM-yyyy')}">Date</td>
+                                    <td>
+                                        <span th:if="${r.status.name() == 'PENDING'}" class="badge-neon badge-neon-purple">PENDING</span>
+                                        <span th:if="${r.status.name() == 'APPROVED'}" class="badge-neon badge-neon-green">HOLD APPROVED</span>
+                                        <span th:if="${r.status.name() == 'CANCELLED'}" class="badge-neon badge-neon-red">CANCELLED</span>
+                                        <span th:if="${r.status.name() == 'COMPLETED'}" class="badge-neon badge-neon-blue">ISSUED</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${recentReservations.isEmpty()}">
+                                    <td colspan="3" class="text-center text-secondary py-4">No active book reservations.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

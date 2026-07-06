@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Dashboard - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: adminSidebar('dashboard')}"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content-wrapper">
+        
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold m-0">Dashboard</h1>
+                <p class="text-secondary small">Library operation overview & statistics</p>
+            </div>
+            
+            <!-- Manual Jobs Trigger -->
+            <form th:action="@{/admin/system/trigger-jobs}" method="post">
+                <button type="submit" class="btn btn-neon-secondary d-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-repeat text-info"></i>
+                    <span>Run Sync Jobs</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Alert Badges (Pending approvals notifications) -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6" th:if="${pendingBorrowsCount > 0}">
+                <div class="alert alert-glass border-info bg-info bg-opacity-10 d-flex justify-content-between align-items-center rounded-3 p-3">
+                    <div class="d-flex align-items-center gap-2 text-info">
+                        <i class="bi bi-info-circle-fill fs-5"></i>
+                        <span>There are <strong th:text="${pendingBorrowsCount}">0</strong> pending book borrow requests.</span>
+                    </div>
+                    <a th:href="@{/admin/requests(status='REQUESTED')}" class="btn btn-sm btn-outline-info border-0 rounded-3">Review Requests</a>
+                </div>
+            </div>
+            <div class="col-md-6" th:if="${pendingReservationsCount > 0}">
+                <div class="alert alert-glass border-warning bg-warning bg-opacity-10 d-flex justify-content-between align-items-center rounded-3 p-3">
+                    <div class="d-flex align-items-center gap-2 text-warning">
+                        <i class="bi bi-info-circle-fill fs-5"></i>
+                        <span>There are <strong th:text="${pendingReservationsCount}">0</strong> pending book reservation requests.</span>
+                    </div>
+                    <a th:href="@{/admin/reservations(status='PENDING')}" class="btn btn-sm btn-outline-warning border-0 rounded-3">Review Holds</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards Grid -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="glass-card stats-card p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">TOTAL BOOKS</div>
+                        <i class="bi bi-journal-bookmark text-info fs-4"></i>
+                    </div>
+                    <div class="stats-number" th:text="${totalBooks}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="glass-card stats-card card-purple p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">TOTAL MEMBERS</div>
+                        <i class="bi bi-people text-primary fs-4"></i>
+                    </div>
+                    <div class="stats-number" th:text="${totalMembers}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="glass-card stats-card p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">BOOKS ISSUED</div>
+                        <i class="bi bi-journal-check text-success fs-4"></i>
+                    </div>
+                    <div class="stats-number text-success" th:text="${booksIssued}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="glass-card stats-card card-purple p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">OVERDUE BOOKS</div>
+                        <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
+                    </div>
+                    <div class="stats-number text-danger" th:text="${overdueBooks}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="glass-card stats-card p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">RESERVATIONS</div>
+                        <i class="bi bi-calendar2-check text-warning fs-4"></i>
+                    </div>
+                    <div class="stats-number text-warning" th:text="${activeReservations}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="glass-card stats-card card-purple p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-secondary small fw-bold">FINES COLLECTED</div>
+                        <i class="bi bi-currency-rupee text-info fs-4"></i>
+                    </div>
+                    <div class="stats-number" th:text="${#numbers.formatDecimal(totalFineCollected, 1, 2)}">0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends Chart Card -->
+        <div class="glass-card p-4 mb-4">
+            <h5 class="fw-bold mb-4"><i class="bi bi-graph-up-arrow me-2 text-info"></i>Library Borrowing & Return Trends (Last 6 Months)</h5>
+            <div style="position: relative; height:320px; width:100%">
+                <canvas id="libraryTrendsChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+    <!-- Chart Configuration Script -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const labels = /*[[${chartLabels}]]*/ [];
+        const checkouts = /*[[${checkoutData}]]*/ [];
+        const returns = /*[[${returnData}]]*/ [];
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('libraryTrendsChart').getContext('2d');
+            
+            // Create neon gradient highlights for Chart.js curves
+            const blueGradient = ctx.createLinearGradient(0, 0, 0, 300);
+            blueGradient.addColorStop(0, 'rgba(0, 210, 255, 0.4)');
+            blueGradient.addColorStop(1, 'rgba(0, 210, 255, 0.02)');
+            
+            const purpleGradient = ctx.createLinearGradient(0, 0, 0, 300);
+            purpleGradient.addColorStop(0, 'rgba(157, 78, 221, 0.4)');
+            purpleGradient.addColorStop(1, 'rgba(157, 78, 221, 0.02)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Books Borrowed',
+                            data: checkouts,
+                            borderColor: '#00d2ff',
+                            borderWidth: 3,
+                            backgroundColor: blueGradient,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#00d2ff',
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Books Returned',
+                            data: returns,
+                            borderColor: '#9d4edd',
+                            borderWidth: 3,
+                            backgroundColor: purpleGradient,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#9d4edd',
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#a0a0b0',
+                                font: {
+                                    family: 'Outfit'
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255,255,255,0.03)'
+                            },
+                            ticks: {
+                                color: '#a0a0b0',
+                                font: {
+                                    family: 'Outfit'
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255,255,255,0.03)'
+                            },
+                            ticks: {
+                                color: '#a0a0b0',
+                                stepSize: 1,
+                                font: {
+                                    family: 'Outfit'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Book Catalog - NexusLibrary Pro</title>
+    <div th:replace="~{fragments/styles :: styles}"></div>
+</head>
+<body>
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{fragments/sidebar :: memberSidebar('catalog')}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        
+        <div class="mb-4">
+            <h1 class="fw-bold m-0">Library Catalog</h1>
+            <p class="text-secondary small">Browse catalog, search titles, filter genres and check book availability</p>
+        </div>
+
+        <!-- Search and Filter Grid -->
+        <div class="row g-4 mb-4">
+            <!-- Filter sidebar -->
+            <div class="col-lg-3">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-funnel text-info me-2"></i>Filter Genre</h5>
+                    
+                    <form th:action="@{/member/catalog}" method="get" id="filterForm">
+                        <input type="hidden" name="search" th:value="${search}">
+                        
+                        <div class="d-flex flex-column gap-2">
+                            <!-- All Genres option -->
+                            <a th:href="@{/member/catalog(search=${search})}" 
+                               class="btn text-start border-0 rounded-3 py-2 px-3" 
+                               th:classappend="${selectedCategoryId == null} ? 'btn-neon text-white' : 'btn-neon-secondary text-secondary'">
+                                <i class="bi bi-grid-fill me-2"></i>All Genres
+                            </a>
+                            
+                            <!-- Category Links -->
+                            <a th:each="cat : ${categories}" 
+                               th:href="@{/member/catalog(search=${search}, categoryId=${cat.id})}" 
+                               class="btn text-start border-0 rounded-3 py-2 px-3" 
+                               th:classappend="${cat.id == selectedCategoryId} ? 'btn-neon text-white' : 'btn-neon-secondary text-secondary'">
+                                <i class="bi bi-tag-fill me-2"></i><span th:text="${cat.name}">Science Fiction</span>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Books Grid List -->
+            <div class="col-lg-9">
+                <!-- Search Bar -->
+                <form th:action="@{/member/catalog}" method="get" class="mb-4 d-flex gap-2">
+                    <input type="hidden" name="categoryId" th:value="${selectedCategoryId}">
+                    <input type="text" name="search" th:value="${search}" class="form-control glass-input" placeholder="Search books by title, author name, ISBN, keywords...">
+                    <button type="submit" class="btn btn-neon px-4 d-flex align-items-center gap-2">
+                        <i class="bi bi-search"></i>
+                        <span>Search</span>
+                    </button>
+                </form>
+
+                <!-- Books List Grid -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6" th:each="book : ${books}">
+                        <div class="glass-card p-4 d-flex flex-column justify-content-between h-100">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge-neon badge-neon-purple small" th:text="${book.categoryName}">Science Fiction</span>
+                                    <code class="text-secondary small" th:text="${book.isbn}">978-0132350884</code>
+                                </div>
+                                <h5 class="fw-bold text-white mb-1" th:text="${book.title}">Book Title</h5>
+                                <p class="text-secondary small mb-3" th:text="${'by ' + book.authorName}">by Author</p>
+                                
+                                <div class="small text-secondary mb-4">
+                                    <span class="d-block mb-1"><i class="bi bi-bookshelf me-2"></i>Shelf allocation: <strong class="text-white" th:text="${book.shelfNumber != null ? book.shelfNumber : 'N/A'}">A-12</strong></span>
+                                    <span class="d-block"><i class="bi bi-layers me-2"></i>Copies available: <strong class="text-white" th:text="${book.availableCopies + ' of ' + book.totalCopies + ' in stock'}">3 of 5</strong></span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
+                                <span th:if="${book.status.name() == 'AVAILABLE'}" class="text-success small fw-medium"><i class="bi bi-check-circle me-1"></i>In Stock</span>
+                                <span th:if="${book.status.name() == 'OUT_OF_STOCK'}" class="text-danger small fw-medium"><i class="bi bi-x-circle me-1"></i>Out of Stock</span>
+                                <span th:if="${book.status.name() == 'ON_HOLD'}" class="text-warning small fw-medium"><i class="bi bi-pause-circle me-1"></i>On Hold</span>
+                                
+                                <a th:href="@{/member/books/{id}(id=${book.id})}" class="btn btn-sm btn-neon py-1.5 px-4 fs-7">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty Catalog check -->
+                    <div class="col-12 text-center text-secondary py-5 my-5" th:if="${books.isEmpty()}">
+                        <i class="bi bi-journal-x fs-1 mb-2 d-block"></i>
+                        No books currently available in this genre.
+                    </div>
+                </div>
+
+                <!-- Pagination Controls -->
+                <nav th:if="${totalPages > 1}" class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary small" th:text="${'Showing page ' + (currentPage + 1) + ' of ' + totalPages + ' (' + totalItems + ' books)'}">Showing page 1 of 5</span>
+                    <ul class="pagination pagination-sm m-0">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link glass-input border-0 rounded-start-3 text-info" th:href="@{/member/catalog(search=${search}, categoryId=${selectedCategoryId}, page=${currentPage - 1})}">Previous</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                            <a class="page-link glass-input border-0 rounded-0 text-info" th:classappend="${currentPage == i} ? 'bg-info text-white'" th:href="@{/member/catalog(search=${search}, categoryId=${selectedCategoryId}, page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                            <a class="page-link glass-input border-0 rounded-end-3 text-info" th:href="@{/member/catalog(search=${search}, categoryId=${selectedCategoryId}, page=${currentPage + 1})}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Fragment -->
+    <div th:replace="~{fragments/toasts :: toasts}"></div>
+
+    <div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>
