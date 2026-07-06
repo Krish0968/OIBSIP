@@ -1,0 +1,18 @@
+# Maven build output
+target/
+
+# SQLite database file (initialized on run, should not be checked into VCS)
+database/railnexus.db
+database/railnexus.db-journal
+
+# IDE specific settings
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+.factorypath
+
+# OS temporary files
+Thumbs.db
+.DS_Store
