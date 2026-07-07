@@ -214,9 +214,29 @@ Spring Data JPA repositories and service classes are used to separate database o
 
 ## Screenshots
 
-Application screenshots are available in the `screenshots` directory.
+### Login Page
+![Login Page](screenshots/01-login.png)
 
-> UI screenshots will be displayed here after the final screenshot set is added.
+### Admin Dashboard
+![Admin Dashboard](screenshots/02-admin-dashboard.png)
+
+### Book Management
+![Book Management](screenshots/03-admin-manage-books.png)
+
+### Member Management
+![Member Management](screenshots/06-admin-manage-members.png)
+
+### Borrow and Return Requests
+![Borrow and Return Requests](screenshots/07-admin-borrow-return-requests.png)
+
+### Reports
+![Reports](screenshots/09-admin-system-reports.png)
+
+### Member Dashboard
+![Member Dashboard](screenshots/10-member-dashboard.png)
+
+### Library Catalog
+![Library Catalog](screenshots/11-member-library-catalog.png)
 
 ## Future Improvements
 
