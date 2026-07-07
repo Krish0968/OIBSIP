@@ -1,157 +1,240 @@
 # NexusLibrary Pro - Digital Library Management System
 
-NexusLibrary Pro is a complete, enterprise-grade Digital Library Management System designed for the Oasis Infobyte Java Development Internship. Built on a modern tech stack utilizing Java 21, Spring Boot 3.3.x, SQLite, Spring Data JPA, Spring Security, Bootstrap 5.3, and Thymeleaf, this system is styled as a premium dark-themed administrative dashboard utilizing glassmorphic components and micro-animations.
+NexusLibrary Pro is a web-based Digital Library Management System developed as **Task 5 of the Oasis Infobyte Java Development Internship**.
 
-This application is designed to be portfolio-ready, fully compiling, and equipped with a realistic database seeder (containing 50+ books, 3 members, and 1 admin), report export systems (CSV/PDF), dynamic fine calculations (₹10/day, fully configurable), and automated reservation expirations.
+The application provides separate portals for administrators and library members. Administrators can manage books, members, authors, categories, borrow requests, reservations, and reports. Members can browse the catalog, request books, view their borrowing history, manage reservations, and update their profile.
 
----
+The project is built using Java, Spring Boot, Spring Security, Spring Data JPA, Thymeleaf, Bootstrap, and SQLite.
 
-## 🚀 Tech Stack & Core Libraries
+## Features
 
-- **Core Runtime**: Java 21 (LTS)
-- **Framework**: Spring Boot 3.3.1 (Spring Web, JPA, Security, Validation, Thymeleaf)
-- **Database**: SQLite (Transactional file-backed DB with foreign key constraints enabled)
-- **JPA Provider**: Hibernate 6 (utilizing Community SQLite Dialect)
-- **UI/UX**: HTML5, Thymeleaf, Bootstrap 5.3 (Dark Theme custom stylesheet, glassmorphism, responsive navigation)
-- **Graphics/Charts**: Chart.js (CDN) for animated analytical line graphs
-- **Reporting Utilities**: OpenPDF (for stylized PDF report exports), OpenCSV-compatible streams
-- **Testing**: JUnit 5, Mockito, Spring Security Test
+### Admin Portal
 
----
+- Dashboard with library statistics and activity overview
+- Manage books with add, edit, delete, search, and filtering
+- Manage authors and book categories
+- View and manage registered members
+- Activate or suspend member accounts
+- Review and process borrow requests
+- Manage return requests and book returns
+- View and process book reservations
+- Track overdue books and fines
+- Export library reports in CSV and PDF formats
+- Role-based access control for administrator pages
 
-## 🌟 Key Features
+### Member Portal
 
-### 👤 Role-Based Portals
+- Member dashboard with borrowing and reservation statistics
+- Browse and search the book catalog
+- Filter books by category
+- View book details and availability
+- Request available books
+- Reserve unavailable books
+- Request book returns
+- View borrowing history and reservation status
+- Update profile information and password
+- Role-based access control for member pages
 
-#### 1. Administrator Portal (`ROLE_ADMIN`)
-- **Interactive Dashboard**: Real-time counters showing Total Books, Members, Books Issued, Overdue checkouts, Active Reservations, and Fines collected. Features an animated Chart.js line graph mapping monthly borrows and returns.
-- **Jobs Trigger**: Manual button to synchronize overdue checks (calculate late days and fines) and cancel expired reservations.
-- **Book Management**: Full CRUD operations to search, filter, catalog new books, edit shelf numbers, cover mock URLs, and adjust stock quantities.
-- **Author & Category Management**: Dynamic dashboards to add, modify, or delete authors and shelf categories with structural constraint checks (e.g. preventing category deletion if books exist).
-- **Member Directory**: Grid listing registered members, contact information, addresses, and button controls to suspend or activate accounts.
-- **Request Approvals**: Inbox to review and approve/reject member borrow requests, return requests, and finalize transactions.
-- **Reservations Fulfiller**: Inbox to review book reservations, approve holds (which decrements stock), and fulfill pick-up transactions.
-- **Exports & Audits**: Dedicated reports section allowing administrators to download database dumps (Books Catalog CSV, Active Checkouts CSV) or a stylized system summary PDF.
+## Tech Stack
 
-#### 2. Member Portal (`ROLE_MEMBER`)
-- **Reader Dashboard**: Overview of currently borrowed books, active reservations, accumulated fines, and a chronological history of their recent library interactions.
-- **Searchable Catalog**: A 3-column responsive card catalog with instant keyword searches and genre filter sidebar widgets.
-- **Book Details Sheet**: Dedicated pages showing descriptions, cover illustrations, publishers, shelf codes, availability counts, and contextual buttons that check reader relations.
-- **Self-Checkout Requests**: One-click button to request a borrow (if book is in stock) or request a reservation hold (if book is out of stock).
-- **Self-Return Requests**: Request return option from history log when checking out books.
-- **Profile Configuration**: Form to edit phone numbers, addresses, and reset login passwords (authenticating current password first).
+| Technology | Usage |
+|---|---|
+| Java 21 | Core application development |
+| Spring Boot | Web application framework |
+| Spring MVC | Request handling and controllers |
+| Spring Security | Authentication and role-based authorization |
+| Spring Data JPA | Database access layer |
+| Hibernate | ORM and entity management |
+| Thymeleaf | Server-side HTML templates |
+| Bootstrap 5 | Responsive user interface |
+| SQLite | Local database |
+| Maven | Dependency management and build |
+| JUnit 5 | Testing |
+| Chart.js | Dashboard charts |
+| OpenPDF | PDF report generation |
 
-### 🛠️ Core Library Business Logic
-- **Configurable Fine Rate**: Calculated dynamically during returns or batch updates at ₹10.00/day (configurable via `library.fine.rate-per-day` in `application.properties`).
-- **Reservation Expirations**: Approved book holds are kept for a maximum of 3 days. If not picked up, the hold is automatically released, restoring book stock (duration is configurable via `library.reservation.expiry-days`).
-- **Maximum Borrow Limit**: Enforces a strict limit of 5 active checkouts per member.
-- **Suspension Lock**: Members with a status of `SUSPENDED` are blocked from placing new checkout requests or book holds.
+## Application Modules
 
----
+### Authentication
 
-## 📁 Project Directory Tree
+The application uses Spring Security for authentication and authorization.
 
-```
-DigitalLibraryManagementSystem/
-├── database/                    # SQLite database directory
-│   └── nexuslibrary.db          # Database file auto-generated on startup
-├── docs/                        # Dedicated project documentation
-│   ├── DEMO_SCRIPT.md           # Script for evaluator walkthrough
-│   ├── PROJECT_EXPLANATION.md   # Architectural details & database schema
-│   └── TEST_CASES.md            # Test cases and execution guide
-├── screenshots/                 # App UI screenshots
-│   ├── login.png
-│   ├── dashboard.png
-│   ├── books.png
-│   ├── members.png
-│   ├── issue.png
-│   ├── return.png
-│   └── reports.png
+Users are redirected to the appropriate dashboard based on their role. Administrator routes and member routes are protected separately.
+
+### Dashboard
+
+The administrator dashboard provides an overview of books, members, issued books, overdue records, reservations, and library activity.
+
+The member dashboard displays current borrowings, reservations, fines, and recent library activity.
+
+### Book Management
+
+Administrators can add, update, delete, search, and filter books. Book availability is updated based on borrowing and reservation operations.
+
+### Member Management
+
+Administrators can view registered members and manage their account status.
+
+Suspended members are prevented from creating new borrow requests and reservations.
+
+### Borrowing and Returns
+
+Members can request available books.
+
+Administrators can review and approve or reject borrow requests. Members can request returns, which can then be processed by the administrator.
+
+### Reservations
+
+Members can reserve books when required.
+
+Administrators can manage reservation requests and process active reservations.
+
+### Reports
+
+The reports module provides library statistics and allows administrators to export selected data in CSV and PDF formats.
+
+## Project Structure
+
+```text
+Java-Task5-NexusLibraryPro/
+├── database/
+├── docs/
+│   ├── DEMO_SCRIPT.md
+│   ├── PROJECT_EXPLANATION.md
+│   └── TEST_CASES.md
+├── screenshots/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/oasis/nexuslibrary/
-│   │   │   ├── config/          # Security & SQL Dialect configs
-│   │   │   ├── controller/      # Auth, Admin, Member, and Export Controllers
-│   │   │   ├── dto/             # Data Transfer Objects with validation annotations
-│   │   │   ├── entity/          # JPA Hibernate entities & relationship mappings
-│   │   │   ├── exception/       # Custom exceptions & global HTTP error advice
-│   │   │   ├── mapper/          # Lightweight Entity-DTO data mappers
-│   │   │   ├── repository/      # Spring Data JPA Repository interfaces
-│   │   │   ├── security/        # Custom UserDetailsService implementation
-│   │   │   ├── service/         # Transactional service interfaces
-│   │   │   │   └── impl/        # Core business logic implementations
-│   │   │   └── util/            # DataSeeder, PDF/CSV generators
+│   │   ├── java/
+│   │   │   └── com/oasis/nexuslibrary/
+│   │   │       ├── config/
+│   │   │       ├── controller/
+│   │   │       ├── dto/
+│   │   │       ├── entity/
+│   │   │       ├── exception/
+│   │   │       ├── mapper/
+│   │   │       ├── repository/
+│   │   │       ├── security/
+│   │   │       ├── service/
+│   │   │       └── util/
 │   │   └── resources/
-│   │       ├── static/css/      # Custom glassmorphism stylesheet (main.css)
-│   │       ├── templates/       # Thymeleaf HTML views
-│   │       │   ├── admin/       # Dashboard, books, members, approvals, reports
-│   │       │   ├── error/       # Custom 403, 404, 500 error pages
-│   │       │   ├── fragments/   # Navigation sidebar, styles, scripts, toast components
-│   │       │   ├── member/      # Catalog, book details, history, profile views
-│   │       │   └── login.html / register.html
-│   │       └── application.properties # Server, database, security, and fine settings
-│   └── test/                    # JUnit Mockito unit tests suite
-├── pom.xml                      # Maven project descriptor
-├── LICENSE                      # MIT License
-└── README.md                    # Main readme documentation
+│   │       ├── static/
+│   │       ├── templates/
+│   │       └── application.properties
+│   └── test/
+├── .gitignore
+├── LICENSE
+├── pom.xml
+└── README.md
 ```
 
----
-
-## 🔑 Demo Accounts & Logins
-
-The system database is seeded automatically on initial application boot.
-
-| Role | Username (Email) | Password | Account Name |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin` | `admin123` | System Administrator |
-| **Library Member** | `krish@mail.com` | `password123` | Krish Sharma |
-| **Library Member** | `aarav@mail.com` | `password123` | Aarav Mehta |
-| **Library Member** | `rohan@mail.com` | `password123` | Rohan Verma |
-
----
-
-## ⚙️ Installation & Build Guide
+## How to Run
 
 ### Prerequisites
-- **Java JDK 21** or higher.
-- **Maven** (bundled or installed).
 
-### Steps to Run
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/DigitalLibraryManagementSystem.git
-   cd DigitalLibraryManagementSystem
-   ```
-2. **Build the Application**:
-   Compile the classes and package them into an executable JAR:
-   ```bash
-   mvn clean package
-   ```
-3. **Execute the JAR**:
-   Run the packaged application:
-   ```bash
-   java -jar target/nexuslibrary-1.0.0-SNAPSHOT.jar
-   ```
-   *Alternatively, run in developer mode:*
-   ```bash
-   mvn spring-boot:run
-   ```
-4. **Access the Portal**:
-   Open a web browser and navigate to `http://localhost:8080`.
+Make sure the following are installed:
 
----
+- JDK 21 or later
+- Git
+- Apache Maven 3.x
 
-## 🔮 Future Improvements
-- **Automatic Email Notifications**: Send automated reminders to members when their books are 3 days away from due dates or when fines accumulate.
-- **RFID & Barcode Scan Integration**: Support barcode inputs on the admin books form to instantly log ISBNs and checkouts.
-- **Payment Gateway Integration**: Integrate Razorpay or Stripe to allow readers to settle overdue fines directly inside their member profiles.
+### Clone the Repository
 
----
+```bash
+git clone https://github.com/Krish0968/OIBSIP.git
+cd OIBSIP/Java-Task5-NexusLibraryPro
+```
 
-## 📄 License
-This project is licensed under the **MIT License** - see the [LICENSE](file:///C:/Users/Asus/.gemini/antigravity/scratch/DigitalLibraryManagementSystem/LICENSE) file for details.
+### Run Tests
 
-## ✍️ Author
-**Krish Mathur**  
-*Java Development Intern | Oasis Infobyte*
+```bash
+mvn clean test
+```
+
+### Build the Project
+
+```bash
+mvn clean package
+```
+
+### Run the Application
+
+```bash
+java -jar target/nexuslibrary-1.0.0-SNAPSHOT.jar
+```
+
+After the application starts, open the following address in your browser:
+
+```text
+http://localhost:8080
+```
+
+## Demo Accounts
+
+The application initializes demo accounts for testing.
+
+| Role | Username | Password |
+|---|---|---|
+| Administrator | admin | admin123 |
+| Member | krish@mail.com | password123 |
+| Member | aarav@mail.com | password123 |
+| Member | rohan@mail.com | password123 |
+
+These accounts are intended only for project demonstration and local testing.
+
+## Testing
+
+The project includes tests for core application functionality, including:
+
+- Fine calculation
+- Reservation workflow
+- Security and authorization rules
+- Database initialization and seeded data
+
+Run the test suite using:
+
+```bash
+mvn clean test
+```
+
+## Database
+
+NexusLibrary Pro uses SQLite for local data storage.
+
+The main entities include:
+
+- Members
+- Books
+- Authors
+- Categories
+- Issues
+- Reservations
+
+Spring Data JPA repositories and service classes are used to separate database operations from business logic.
+
+## Screenshots
+
+Application screenshots are available in the `screenshots` directory.
+
+> UI screenshots will be displayed here after the final screenshot set is added.
+
+## Future Improvements
+
+- Email notifications for due dates and reservations
+- Barcode or RFID support for book management
+- Online fine payment integration
+- PostgreSQL or MySQL support for multi-user deployment
+- Deployment using Docker and a cloud hosting platform
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## Author
+
+**Krish**
+
+Computer Science & Engineering Student at VIT  
+Java Development Intern - Oasis Infobyte
+
+GitHub: `Krish0968`
