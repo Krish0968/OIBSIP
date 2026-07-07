@@ -166,9 +166,20 @@ Foreign key constraints and indexes are used to maintain relationships and impro
 
 ## Screenshots
 
-Application screenshots are available in the `screenshots` directory.
+### Login Screen
+![RailNexus Login Screen](screenshots/01-login.png)
 
-> UI screenshots can be added here to provide a quick preview of the application.
+### Dashboard
+![RailNexus Dashboard](screenshots/02-dashboard.png)
+
+### Book Reservation
+![RailNexus Book Reservation](screenshots/03-book-reservation.png)
+
+### My Bookings
+![RailNexus My Bookings](screenshots/04-my-bookings.png)
+
+### Ticket Cancellation
+![RailNexus Ticket Cancellation](screenshots/05-cancellation.png)
 
 ## Future Improvements
 
