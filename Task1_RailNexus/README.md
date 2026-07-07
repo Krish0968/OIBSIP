@@ -151,9 +151,12 @@ OnlineReservationSystem/
 - **Apache Maven 3.x** installed.
 
 ### Step 1: Clone the Repository
-Navigate to your project folder:
+
+Clone the OIBSIP repository and navigate to the Task 1 project directory:
+
 ```bash
-cd OIBSIP/Java-Task1-OnlineReservationSystem
+git clone https://github.com/Krish0968/OIBSIP.git
+cd OIBSIP/Task1_RailNexus
 ```
 
 ### Step 2: Clean & Compile Unit Tests
