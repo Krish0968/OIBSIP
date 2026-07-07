@@ -1,226 +1,188 @@
-# RailNexus: Smart Railway Reservation System
+# RailNexus - Online Reservation System
 
-An elegant, secure, and modern Java desktop application built using Swing, SQLite, and FlatLaf, designed for the **Oasis Infobyte Java Development Internship** (Task 1 — Online Reservation System).
+RailNexus is a Java desktop application developed as **Task 1 of the Oasis Infobyte Java Development Internship**.
 
----
+The project provides a simple railway reservation workflow where users can log in, book tickets, view their bookings, and cancel reservations. It is built using Java Swing, SQLite, and Maven with a layered architecture to keep the UI, business logic, and database operations separate.
 
-## Project Overview
+## Features
 
-### Problem Statement
-Traditional railway booking demonstration systems often rely on command-line prompts or basic UI layouts with hardcoded credentials and database connections. This approach lacks the security of modern password hashing, fails to validate inputs properly (such as preventing booking past dates), and suffers from session leaks or cross-user ticket manipulation.
+- Secure user login with BCrypt password hashing
+- Modern desktop interface built with Java Swing and FlatLaf
+- Railway ticket booking with automatic train detail selection
+- Input validation for passenger details and journey dates
+- Unique PNR generation for every reservation
+- View and search personal bookings
+- Filter bookings by reservation status
+- Cancel tickets using PNR
+- User-level access control for reservations
+- SQLite database with automatic initialization
+- Parameterized SQL queries using PreparedStatements
+- Unit and service-layer tests using JUnit 5
 
-### Objectives
-- Build a polished, original desktop booking dashboard with a modern dark theme interface.
-- Implement robust security practices, including salted BCrypt password hashing and Parameterized PreparedStatements to block SQL Injection.
-- Enforce business validations: prevent past date bookings, block identical source/destination routes, and secure ownership boundaries (preventing User A from cancelling User B's tickets).
-- Create a portable, zero-configuration system utilizing SQLite that launches instantly after compilation.
+## Tech Stack
 
----
+| Technology | Usage |
+|---|---|
+| Java 21 | Core application development |
+| Java Swing | Desktop user interface |
+| FlatLaf | Modern Look and Feel |
+| SQLite | Local database |
+| JDBC | Database connectivity |
+| BCrypt | Password hashing |
+| Maven | Dependency management and build |
+| JUnit 5 | Testing |
 
-## Key Features
+## Application Modules
 
-1. **Branded Secure Login Form**
-   - Clean sign-in page with active show/hide password toggle, clear form capability, and Enter-key submission.
-   - Credentials validated against salted BCrypt hashes.
-   - Pre-seeded test accounts highlighted on the interface for quick evaluation.
+### Login
 
-2. **Dashboard Overview**
-   - Welcomes the authenticated user by name.
-   - Dynamic metrics cards: Total, Confirmed, and Cancelled bookings.
-   - Live JTable rendering the user's 5 most recent bookings.
-   - Quick action navigation shortcuts.
+Users can log in using their credentials. Passwords are stored as BCrypt hashes instead of plain text.
 
-3. **Train Ticket Booking**
-   - Choice of realistic fictional Indian trains loaded dynamically from SQLite.
-   - Selectable train numbers automatically populating route details (Train Name, Stations, Departure, and Arrival timings) as read-only.
-   - Validation checks for empty fields and past travel dates.
-   - Double-check review modal detailing itinerary before committing transaction.
+### Dashboard
 
-4. **Unique PNR Generation**
-   - Format: `RNX-YYYYMMDD-XXXXXX` (Prefix-Date-SecureRandom Suffix).
-   - Collision retry loops checking database existence to ensure absolute uniqueness.
+The dashboard displays booking statistics, recent reservations, and shortcuts to the main application features.
 
-5. **My Bookings Manager**
-   - Lists only the active user's tickets in a non-editable, sorted JTable.
-   - Live text search filtering by PNR or Passenger Name.
-   - Status filters (All, Confirmed, Cancelled).
-   - Double-click to inspect departure times, routes, and booked timestamps.
+### Book Reservation
 
-6. **Ticket Cancellation Panel**
-   - Look up reservation details by PNR.
-   - Authorization bounds check: blocks attempts to fetch or cancel other users' tickets.
-   - Soft cancellation updates ticket status to `'CANCELLED'` and timestamps the record without wiping historical audit logs.
+Users can select a train, enter passenger details and choose a journey date. Train information is filled automatically based on the selected train.
 
----
+Before confirming the booking, the application displays a summary of the reservation details.
 
-## Tech Stack & Architecture
+### My Bookings
 
-- **Language**: Java 21 (LTS)
-- **GUI Framework**: Swing with **FlatLaf Dark Theme** (v3.4.1)
-- **Database**: SQLite (via `sqlite-jdbc` v3.45.1.0)
-- **Security**: BCrypt hashing (via `jbcrypt` v0.4)
-- **Testing**: JUnit 5 for unit validation
-- **Build System**: Maven
+Users can view their reservations, search by PNR or passenger name, filter bookings by status, and open detailed booking information.
 
-### Software Layering
-```
-Presentation (UI)  <--->  Service (Business Rules)  <--->  DAO (JDBC Queries)  <--->  SQLite
-```
+### Ticket Cancellation
 
----
+Users can search for their reservation using the PNR and cancel confirmed bookings.
 
-## Folder Structure
+A user can only access and cancel reservations associated with their own account.
 
-```
-OnlineReservationSystem/
-├── pom.xml
-├── README.md
-├── LICENSE
-├── .gitignore
+## Project Structure
+
+```text
+Task1_RailNexus/
 ├── database/
 │   ├── schema.sql
 │   └── seed.sql
 ├── docs/
 │   ├── DEMO_SCRIPT.md
-│   ├── TEST_CASES.md
-│   └── PROJECT_EXPLANATION.md
+│   ├── PROJECT_EXPLANATION.md
+│   └── TEST_CASES.md
+├── screenshots/
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── krish/
-│   │   │           └── oibsip/
-│   │   │               └── reservation/
-│   │   │                   ├── Main.java
-│   │   │                   ├── config/
-│   │   │                   │   ├── DatabaseConnection.java
-│   │   │                   │   └── DatabaseInitializer.java
-│   │   │                   ├── model/
-│   │   │                   │   ├── User.java
-│   │   │                   │   ├── Train.java
-│   │   │                   │   └── Reservation.java
-│   │   │                   ├── dao/
-│   │   │                   │   ├── UserDAO.java
-│   │   │                   │   ├── TrainDAO.java
-│   │   │                   │   └── ReservationDAO.java
-│   │   │                   ├── service/
-│   │   │                   │   ├── AuthService.java
-│   │   │                   │   └── ReservationService.java
-│   │   │                   ├── ui/
-│   │   │                   │   ├── LoginFrame.java
-│   │   │                   │   ├── MainFrame.java
-│   │   │                   │   ├── DashboardPanel.java
-│   │   │                   │   ├── ReservationPanel.java
-│   │   │                   │   ├── MyBookingsPanel.java
-│   │   │                   │   ├── CancellationPanel.java
-│   │   │                   │   └── components/
-│   │   │                   └── util/
-│   │   │                       ├── PNRGenerator.java
-│   │   │                       ├── PasswordUtil.java
-│   │   │                       ├── ValidationUtil.java
-│   │   │                       └── DateUtil.java
+│   │   │   └── com/krish/oibsip/reservation/
+│   │   │       ├── config/
+│   │   │       ├── dao/
+│   │   │       ├── model/
+│   │   │       ├── service/
+│   │   │       ├── ui/
+│   │   │       ├── util/
+│   │   │       └── Main.java
 │   │   └── resources/
-│   │       └── application.properties
 │   └── test/
-│       └── java/
-│           └── com/
-│               └── krish/
-│                   └── oibsip/
-│                       └── reservation/
-│                           ├── PNRGeneratorTest.java
-│                           ├── ValidationUtilTest.java
-│                           ├── PasswordUtilTest.java
-│                           └── ServiceLayerTest.java
+├── .gitignore
+├── LICENSE
+├── pom.xml
+└── README.md
 ```
 
----
-
-## Database Design
-
-### Schema & Index Layout
-1. **users**: Stores accounts. Password field holds only BCrypt hashes.
-2. **trains**: Holds train schedules. Has unique index on `train_number`.
-3. **reservations**: Stores bookings. Holds foreign keys referencing `users(id)` and `trains(id)`. Has index on `pnr` for fast cancellation searches, and `user_id` for list lookups.
-
----
-
-## Installation & How to Run
+## How to Run
 
 ### Prerequisites
-- **JDK 21** or higher.
-- **Apache Maven 3.x** installed.
 
-### Step 1: Clone the Repository
+Make sure the following are installed:
 
-Clone the OIBSIP repository and navigate to the Task 1 project directory:
+- JDK 21 or later
+- Git
+- Apache Maven 3.x
+
+### Clone the Repository
 
 ```bash
 git clone https://github.com/Krish0968/OIBSIP.git
 cd OIBSIP/Task1_RailNexus
 ```
 
-### Step 2: Clean & Compile Unit Tests
-Run the Maven test suite to check validations, password hashing, and service limits:
+### Run Tests
+
 ```bash
 mvn clean test
 ```
 
-### Step 3: Package the Project
-Package the application into an executable fat JAR containing all libraries (SQLite, FlatLaf, BCrypt):
+### Build the Project
+
 ```bash
 mvn clean package
 ```
 
-### Step 4: Run the Application
-Start the compiled fat JAR:
+### Run the Application
+
 ```bash
 java -jar target/railnexus-1.0.0-jar-with-dependencies.jar
 ```
-*(Note: On first startup, the application creates the `database` folder and seeds `railnexus.db` automatically. You do not need to execute SQL scripts manually.)*
 
----
+The SQLite database is initialized automatically when the application starts for the first time.
 
-## Evaluation Credentials
+## Demo Credentials
 
-Use these seeded credentials to log in:
-- **User 1**: `krish` / password: `demo123`
-- **User 2**: `passenger1` / password: `pass123`
+| Username | Password |
+|---|---|
+| krish | demo123 |
+| passenger1 | pass123 |
 
----
+These accounts are included for project demonstration and testing.
 
-## Testing & Quality Assurance
-Run unit tests locally with `mvn clean test`. For manual verification:
-1. Try invalid login combinations.
-2. Book a ticket for tomorrow on train `1001`, confirm the generated PNR appears in "My Bookings".
-3. Verify that logging in as `passenger1` throws access errors when trying to view or cancel the ticket created by `krish`.
+## Testing
 
----
+The project includes automated tests for:
 
-## Security Considerations & Limitations
-- **Local SQLite File**: The database file is stored locally under `database/railnexus.db`. This is ideal for lightweight offline portfolios but must be migrated to a standalone database (like PostgreSQL) for multiuser network production.
-- **In-Memory Sessions**: Authentication states are stored in memory (`AuthService`). Closing the window terminates the session.
-- **Seat Allotment**: The prototype handles itinerary ticketing but does not calculate physical seat maps or coach allocation.
+- Password hashing and verification
+- PNR generation and format validation
+- Input and journey date validation
+- Reservation service logic
+- User authorization checks
+- Duplicate cancellation handling
 
----
+Run all tests using:
 
-## Internship Requirement Mapping
+```bash
+mvn clean test
+```
 
-| Internship Requirement | Implementation Method | Where to Verify |
-|---|---|---|
-| **Login Form** | `LoginFrame.java` | Credentials checked against DB hashes; errors clear password inputs. |
-| **BCrypt Password Hashing** | `PasswordUtil.java` | Standard BCrypt salts used; plain passwords never saved. |
-| **Auto-population of Train details** | `ReservationPanel.java` | Selecting train numbers queries details and populates read-only fields. |
-| **Unique PNR Generation** | `PNRGenerator.java` | Formats `RNX-YYYYMMDD-XXXXXX` and checks DB collision loops. |
-| **Soft Cancellations** | `ReservationDAO.java` | Updates status to `CANCELLED` and logs `cancelled_at` instead of deleting. |
-| **Security Bounds Check** | `ReservationService.java` | Enforces owner checks (`userId` matches session) before fetching/cancellation. |
-| **Zero Configuration Setup** | `DatabaseInitializer.java` | Automatic folder generation and schema parsing on execution. |
+## Database
 
----
+RailNexus uses SQLite for local data storage.
+
+The main database tables are:
+
+- `users` - stores user accounts and password hashes
+- `trains` - stores train and route information
+- `reservations` - stores ticket bookings and reservation status
+
+Foreign key constraints and indexes are used to maintain relationships and improve common reservation lookups.
+
+## Screenshots
+
+Application screenshots are available in the `screenshots` directory.
+
+> UI screenshots can be added here to provide a quick preview of the application.
+
+## Future Improvements
+
+- Seat and coach allocation
+- Printable ticket or PDF export
+- Additional train search filters
+- Admin dashboard for train management
+- Migration to PostgreSQL or MySQL for multi-user deployment
+
 ## Author
 
 **Krish**
 
 Computer Science & Engineering Student at VIT  
-Java Development Intern — Oasis Infobyte
+Java Development Intern - Oasis Infobyte
 
-- GitHub: Krish0968
+GitHub: `Krish0968`
