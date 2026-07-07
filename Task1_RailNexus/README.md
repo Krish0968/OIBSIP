@@ -213,7 +213,11 @@ Run unit tests locally with `mvn clean test`. For manual verification:
 | **Zero Configuration Setup** | `DatabaseInitializer.java` | Automatic folder generation and schema parsing on execution. |
 
 ---
-
 ## Author
-- **GitHub**: [github.com/krish-sharma](https://github.com/krish-sharma) *(Replace with your link)*
-- **LinkedIn**: [linkedin.com/in/krish-sharma](https://linkedin.com/in/krish-sharma) *(Replace with your link)*
+
+**Krish**
+
+Computer Science & Engineering Student at VIT  
+Java Development Intern — Oasis Infobyte
+
+- GitHub: Krish0968
